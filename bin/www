@@ -7,7 +7,13 @@
 var app = require('../app');
 var debug = require('debug')('ssl-nodejs:server');
 var http = require('http');
+var https = require('https');
+var fs = require('fs');
 
+var option = {
+  key: fs.readFileSync('../server.key'),
+  cert: fs.readFileSync('../server.csr')
+}
 /**
  * Get port from environment and store in Express.
  */
@@ -15,11 +21,15 @@ var http = require('http');
 var port = normalizePort(process.env.PORT || '3000');
 app.set('port', port);
 
+var porthttps = normalizePort(process.env.PORT || '9001');
+app.set('porthttps', porthttps);
+
 /**
  * Create HTTP server.
  */
 
 var server = http.createServer(app);
+var serverhttps = https.createServer(option, app);
 
 /**
  * Listen on provided port, on all network interfaces.
@@ -29,6 +39,10 @@ server.listen(port);
 server.on('error', onError);
 server.on('listening', onListening);
 
+
+serverhttps.listen(porthttps);
+serverhttps.on('error', onError);
+serverhttps.on('listening', onListening);
 /**
  * Normalize a port into a number, string, or false.
  */
